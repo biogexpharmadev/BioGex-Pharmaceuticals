@@ -13,6 +13,9 @@ export const metadata: Metadata = {
     shortcut: '/logocrop.png',
     apple: '/logocrop.png',
   },
+  other: {
+    'facebook-domain-verification': '2izw4rcialvv49j65jrhdr4doluvxj',
+  },
 }
 
 export default function RootLayout({
