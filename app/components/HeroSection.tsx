@@ -53,7 +53,7 @@ export default function HeroSection() {
   }
 
   const openProductSheet = () => {
-    window.open("https://docs.google.com/spreadsheets/d/1example", "_blank")
+    window.location.href = "/products"
   }
 
   // Animation variants

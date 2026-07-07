@@ -1,21 +1,57 @@
 "use client"
 
-import type React from "react"
-import { useEffect } from "react"
-import { MapPin, Phone, Mail, Clock } from "lucide-react"
+import { useState } from "react"
+import { useForm, Controller } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import * as z from "zod"
+import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input"
+import "react-phone-number-input/style.css"
+import { MapPin, Phone, Mail, Clock, Send, Loader2, CheckCircle, AlertCircle } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+
+const formSchema = z.object({
+  name: z.string().min(2, "Name is required"),
+  email: z.string().email("Invalid email address"),
+  phone: z.string().min(1, "Phone number is required").refine(isValidPhoneNumber, "Enter a valid phone number"),
+  subject: z.string().min(2, "Subject is required"),
+  message: z.string().min(5, "Message is required"),
+})
+
+type FormValues = z.infer<typeof formSchema>
 
 export default function ContactSection() {
-  // Load GHL Script on Mount
-  useEffect(() => {
-    const script = document.createElement("script")
-    script.src = "https://api.carasant.com/js/form_embed.js"
-    script.async = true
-    document.body.appendChild(script)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isSuccess, setIsSuccess] = useState(false)
+  const [errorDetails, setErrorDetails] = useState("")
 
-    return () => {
-      document.body.removeChild(script)
+  const { register, handleSubmit, control, formState: { errors }, reset } = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: { name: "", email: "", phone: "", subject: "", message: "" },
+  })
+
+  const onSubmit = async (data: FormValues) => {
+    setIsSubmitting(true)
+    setErrorDetails("")
+
+    try {
+      const res = await fetch("/api/send-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      })
+
+      const result = await res.json()
+      if (!res.ok) throw new Error(result.error || "Failed to send message")
+
+      setIsSuccess(true)
+      reset()
+    } catch (err: any) {
+      setErrorDetails(err.message || "An unexpected error occurred")
+    } finally {
+      setIsSubmitting(false)
     }
-  }, [])
+  }
 
   return (
     <section id="contact" className="py-12 sm:py-20 bg-gradient-to-br from-green-50 via-emerald-50 to-white relative overflow-hidden">
@@ -93,26 +129,104 @@ export default function ContactSection() {
             </div>
           </div>
 
-          {/* Contact Form Iframe */}
-          <div className="backdrop-blur-sm rounded-xl border border-white/30 h-[800px] overflow-hidden flex-1">
-            <iframe
-              src="https://api.carasant.com/widget/form/D9e0toSFuAgLGXY9YGYL"
-              style={{ width: '100%', height: '100%', border: 'none', borderRadius: '3px' }}
-              id="inline-D9e0toSFuAgLGXY9YGYL"
-              data-layout="{'id':'INLINE'}"
-              data-trigger-type="alwaysShow"
-              data-trigger-value=""
-              data-activation-type="alwaysActivated"
-              data-activation-value=""
-              data-deactivation-type="neverDeactivate"
-              data-deactivation-value=""
-              data-form-name="3. Website Contact Form"
-              data-height="undefined"
-              data-layout-iframe-id="inline-D9e0toSFuAgLGXY9YGYL"
-              data-form-id="D9e0toSFuAgLGXY9YGYL"
-              title="3. Website Contact Form"
-            >
-            </iframe>
+          {/* Contact Form */}
+          <div className="bg-white/60 backdrop-blur-sm rounded-xl border border-white/30 shadow-lg p-6 sm:p-8 flex-1">
+            {isSuccess ? (
+              <div className="flex flex-col items-center justify-center text-center h-full py-12">
+                <div className="bg-green-50 border border-green-200 rounded-lg p-8">
+                  <CheckCircle className="text-green-600 mx-auto mb-4 w-16 h-16" />
+                  <h3 className="text-2xl font-bold text-green-800 mb-3">Message Sent!</h3>
+                  <p className="text-gray-700 max-w-md mx-auto mb-6">
+                    Thank you for reaching out. Our team will get back to you within 24-48 hours.
+                  </p>
+                  <Button
+                    variant="secondary"
+                    onClick={() => setIsSuccess(false)}
+                    className="text-white font-medium bg-[#2e7d32] hover:bg-[#2e7d32]/80 !rounded-xl"
+                  >
+                    Send another message
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700">Full Name</label>
+                    <Input {...register("name")} className="bg-white" placeholder="Your Name" />
+                    {errors.name && <span className="text-red-500 text-xs">{errors.name.message}</span>}
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700">Email Address</label>
+                    <Input {...register("email")} className="bg-white" placeholder="name@company.com" />
+                    {errors.email && <span className="text-red-500 text-xs">{errors.email.message}</span>}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700">Phone Number</label>
+                  <Controller
+                    name="phone"
+                    control={control}
+                    render={({ field }) => (
+                      <PhoneInput
+                        international
+                        defaultCountry="KE"
+                        countryCallingCodeEditable={false}
+                        value={field.value}
+                        onChange={(value) => field.onChange(value || "")}
+                        onBlur={field.onBlur}
+                        className="biogex-phone-input"
+                        placeholder="Enter phone number"
+                      />
+                    )}
+                  />
+                  {errors.phone && <span className="text-red-500 text-xs">{errors.phone.message}</span>}
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700">Subject</label>
+                  <Input {...register("subject")} className="bg-white" placeholder="How can we help?" />
+                  {errors.subject && <span className="text-red-500 text-xs">{errors.subject.message}</span>}
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700">Message</label>
+                  <textarea
+                    {...register("message")}
+                    rows={5}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2e7d32] focus:border-transparent outline-none resize-none bg-white"
+                    placeholder="Tell us about your inquiry..."
+                  />
+                  {errors.message && <span className="text-red-500 text-xs">{errors.message.message}</span>}
+                </div>
+
+                {errorDetails && (
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center text-red-700 text-sm">
+                    <AlertCircle className="w-5 h-5 mr-2 flex-shrink-0" />
+                    {errorDetails}
+                  </div>
+                )}
+
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full bg-[#2e7d32] hover:bg-[#1b5e20] text-white py-6 text-lg font-semibold shadow-md hover:shadow-xl"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="animate-spin mr-2" size={20} />
+                      Sending...
+                    </>
+                  ) : (
+                    <>
+                      Send Message
+                      <Send size={20} className="ml-2" />
+                    </>
+                  )}
+                </Button>
+              </form>
+            )}
           </div>
         </div>
 

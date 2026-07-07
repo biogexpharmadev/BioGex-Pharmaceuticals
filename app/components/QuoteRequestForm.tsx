@@ -134,7 +134,7 @@ export default function QuoteRequestForm() {
                 products: selectedProducts
             }
 
-            const res = await fetch('/api/quote', {
+            const res = await fetch('/api/quote-email', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)

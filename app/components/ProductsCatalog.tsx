@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Package, Search, Filter, ExternalLink, Loader2, Download, FileText } from "lucide-react"
+import { Package, Search, Filter, Loader2, Download, FileText } from "lucide-react"
 
 interface Product {
   [key: string]: string
@@ -234,22 +234,6 @@ export default function ProductsCatalog() {
                         )}
                       </div>
                     </th>
-                    <th 
-                      className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
-                      onClick={() => handleSort("priceksh")}
-                    >
-                      <div className="flex items-center gap-2">
-                        Price (KSh)
-                        {sortField === "priceksh" && (
-                          <span className="text-green-600">
-                            {sortDirection === "asc" ? "↑" : "↓"}
-                          </span>
-                        )}
-                      </div>
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -267,17 +251,6 @@ export default function ProductsCatalog() {
                         <div className="text-sm text-gray-600">
                           {product.description || 'N/A'}
                         </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-semibold text-green-600">
-                          KSh {(product.priceksh || product.price || '0').replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        <button className="text-green-600 hover:text-green-800 transition-colors flex items-center gap-1">
-                          <ExternalLink className="w-3 h-3" />
-                          Details
-                        </button>
                       </td>
                     </tr>
                   ))}

@@ -1,16 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server'
 import nodemailer from 'nodemailer'
+import { syncContactFormToGHL } from '@/lib/ghl'
 
 export async function POST(request: NextRequest) {
   try {
-    const { name, email, subject, message } = await request.json()
+    const { name, email, phone, subject, message } = await request.json()
 
     // Validate required fields
-    if (!name || !email || !subject || !message) {
+    if (!name || !email || !phone || !subject || !message) {
       return NextResponse.json(
         { error: 'All fields are required' },
         { status: 400 }
       )
+    }
+
+    // GHL sync is best-effort: never block or fail the request on its account
+    try {
+      await syncContactFormToGHL({ name, email, phone, subject, message })
+    } catch (err) {
+      console.error('GHL sync failed (non-blocking):', err)
     }
 
     // Create transporter
@@ -26,8 +34,9 @@ export async function POST(request: NextRequest) {
 
     // Email to admin
     const adminEmail = {
-      from: process.env.SMTP_USER ,
-      to: process.env.SMTP_USER ,
+      from: process.env.SMTP_USER,
+      to: 'info@biogexpharma.com',
+      replyTo: email,
       subject: `New Contact Form Submission: ${subject}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -45,6 +54,7 @@ export async function POST(request: NextRequest) {
               <h3 style="color: #333; margin-top: 0;">Contact Details:</h3>
               <p><strong>Name:</strong> ${name}</p>
               <p><strong>Email:</strong> ${email}</p>
+              <p><strong>Phone:</strong> ${phone}</p>
               <p><strong>Subject:</strong> ${subject}</p>
               <p><strong>Message:</strong></p>
               <div style="background-color: white; padding: 15px; border-radius: 5px; border-left: 4px solid #2e7d32;">

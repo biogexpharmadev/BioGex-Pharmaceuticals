@@ -214,3 +214,49 @@
   0% { transform: translateX(0); }
   100% { transform: translateX(-100%); }
 }
+
+/* International phone input (react-phone-number-input) */
+.biogex-phone-input {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  background-color: white;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  padding: 0 0.75rem;
+  height: 2.5rem;
+}
+
+.biogex-phone-input:focus-within {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px #2e7d32;
+  border-color: transparent;
+}
+
+.biogex-phone-input .PhoneInputCountry {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin-right: 0.25rem;
+}
+
+.biogex-phone-input .PhoneInputCountryIcon {
+  width: 1.25rem;
+  height: 0.9rem;
+  box-shadow: none;
+}
+
+.biogex-phone-input .PhoneInputCountrySelectArrow {
+  opacity: 0.5;
+}
+
+.biogex-phone-input .PhoneInputInput {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 0.875rem;
+  height: 100%;
+}

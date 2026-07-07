@@ -43,7 +43,7 @@ export default function AboutSection() {
   }
 
   const openProductSheet = () => {
-    window.open("https://docs.google.com/spreadsheets/d/1example", "_blank")
+    window.location.href = "/products"
   }
 
   return (
